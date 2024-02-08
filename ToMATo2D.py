@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 pts = pd.read_csv('points2d.csv').to_numpy( dtype = float )
 plt.scatter(pts[:,0],pts[:,1], s = 0.8)
+plt.title("Set of points")
 plt.show()
 
 # Finding the best parameters for density estimation
@@ -24,6 +25,7 @@ vec = np.exp(kde.score_samples(pts))
 fig = plt.figure()
 ax = plt.axes(projection ='3d')
 ax.scatter(pts[:,0], pts[:,1], vec)
+plt.title("Estimated density function")
 plt.show()
 
 # Finding the best value for the radius parameter in the Rips graph
@@ -35,6 +37,9 @@ rads = np.linspace(0, 10, 20)
 # Average number of neighbors depending on the radius
 cnbs = [np.mean([kdt.query_radius([pts[i]], rads[j], return_distance=False)[0].shape[0] for i in np.arange(pts.shape[0])]) for j in range(len(rads))]
 plt.plot(rads, cnbs)
+plt.title("Average number of neighbors vs. the radius")
+plt.xlabel("Radius")
+plt.ylabel("Average number of neighbors")
 plt.show()
 
 # Using the elbow method we determine the optimal radius value
@@ -95,20 +100,24 @@ def UnionFind( vecs, rad, tau ):
                 v.pop(crid)
                 deaths[crid] = vecs[ix]
 
+    # Setting the death values to the components that have been born but had not died to 0 (equivalent to infinity)
+    for ix in list(births.keys()):
+        if ix not in list(deaths.keys()):
+            deaths[ix] = 0
+
     return v, births, deaths
 
+# Running the algorithm with tau equal to infinity is equivalent to finding all the persistence classes
 v, births, deaths = UnionFind(vecs = vecs, rad=rad, tau = np.inf)
-
-# Setting the death values to the components that have been born but had not died to 0 (equivalent to infinity)
-for ix in list(births.keys()):
-    if ix not in list(deaths.keys()):
-        deaths[ix] = 0
 
 # Forming persistence classes
 persistc = np.array([[births[i], deaths[i]] for i in list(births.keys())])
 
 plt.scatter(persistc[:,0], persistc[:,1], color = 'black')
 plt.plot([0, max(persistc[:,0])], [0, max(persistc[:,0])], 'r--')
+plt.title("Persistence diagram")
+plt.xlabel("Birth")
+plt.ylabel("Death")
 plt.show()
 
 # Finding the best merging parameter from the graph
@@ -117,10 +126,6 @@ tau = 0.002
 # Running the algorithm again for the parameter tau
 v, births, deaths = UnionFind(vecs, rad, tau)
 
-for ix in list(births.keys()):
-    if ix not in list(deaths.keys()):
-        deaths[ix] = 0
-
 # Forming clusters
 cls = np.array([i for i in list(deaths.keys()) if deaths[i] == 0]) # Cluster indexes
 n_cl = len(cls) # Number of clusters
@@ -128,6 +133,9 @@ clc = [len(v[i]) for i in cls] # Cluster cardinality list
 
 # Determining the optimal treshhold value
 plt.scatter(np.arange(n_cl), clc)
+plt.title("Cluster cardinalities")
+plt.xlabel("Cluster no.")
+plt.ylabel("Cluster cardinality")
 plt.show()
 
 trshold = 10
@@ -148,6 +156,7 @@ for i in range(n_cl):
 # Final result
 
 plt.scatter(pts[:,0], pts[:,1], c = clcolors)
+plt.title("Final result")
 plt.show()
 
 
