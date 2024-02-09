@@ -1,11 +1,16 @@
 # Application of the ToMATo algorithm on a 2D set of data
 
+# There are comments next to some variables which suggest which values should be taken
+# depending on which test case we are processing, eg. Case1: rad=2, Case2: rad=0.2, Case3: rad=1
+# meaning that we should take rad=2 when processing the first test case, rad=0.2 when dealing with the second
+# and rad=1 when exercising the third test case
+
 # Reading and visualizing data
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-pts = pd.read_csv('points2d.csv').to_numpy( dtype = float )
+pts = pd.read_csv('points2d.csv').to_numpy( dtype = float ) # Here we can type points2d1, points2d2 or points2d3 depending on the test case we want
 plt.scatter(pts[:,0],pts[:,1], s = 0.8)
 plt.title("Set of points")
 plt.show()
@@ -15,7 +20,7 @@ plt.show()
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 
-bdws = np.linspace(0.1, 1, 10)
+bdws = np.linspace(0.1, 2, 20)
 grid = GridSearchCV(KernelDensity(kernel='gaussian'), {'bandwidth': bdws}, cv=10)
 grid.fit(pts)
 bw = grid.best_params_['bandwidth']
@@ -33,7 +38,7 @@ plt.show()
 from sklearn.neighbors import KDTree
 
 kdt = KDTree(pts, metric='euclidean')
-rads = np.linspace(0, 10, 20)
+rads = np.linspace(0, 10, 20)     # Case1: (0,10,20), Case2: (0,1,20), Case3: (0,5,20)
 # Average number of neighbors depending on the radius
 cnbs = [np.mean([kdt.query_radius([pts[i]], rads[j], return_distance=False)[0].shape[0] for i in np.arange(pts.shape[0])]) for j in range(len(rads))]
 plt.plot(rads, cnbs)
@@ -43,7 +48,7 @@ plt.ylabel("Average number of neighbors")
 plt.show()
 
 # Using the elbow method we determine the optimal radius value
-rad = 1
+rad = 2     # Case1: rad=2, Case2: rad=0.2, Case3: rad=1
 
 # Sorted values of estimated density values and their indexes
 ids = [i for (e,i) in sorted([(e,i) for i,e in enumerate(vec)])]
@@ -57,9 +62,9 @@ births = {}
 deaths = {}
 
 
-# Finding all the persistence classes
+# Finding clusters
 
-def UnionFind( vecs, rad, tau ):
+def FindClusters( vecs, rad, tau ):
     v = {}
     births = {}
     deaths = {}
@@ -121,7 +126,7 @@ plt.ylabel("Death")
 plt.show()
 
 # Finding the best merging parameter from the graph
-tau = 0.002
+tau = 0.004     # Case1: tau=0.004, Case2: tau=0.2, Case3: tau=0.0035
 
 # Running the algorithm again for the parameter tau
 v, births, deaths = UnionFind(vecs, rad, tau)
@@ -138,7 +143,7 @@ plt.xlabel("Cluster no.")
 plt.ylabel("Cluster cardinality")
 plt.show()
 
-trshold = 10
+trshold = 50
 
 # Coloring the clusters
 colors = [] # Generating colors
@@ -158,6 +163,3 @@ for i in range(n_cl):
 plt.scatter(pts[:,0], pts[:,1], c = clcolors)
 plt.title("Final result")
 plt.show()
-
-
-
