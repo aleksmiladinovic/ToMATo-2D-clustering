@@ -43,11 +43,7 @@ pts = np.vstack((l,u,v)).T
 
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
-#import matplotlib as mpl
-#from mpl_toolkits.mplot3d import Axes3D
-#from mpl_toolkits import mplot3d
 
-#bdws = 10**np.linspace(-1, 1, 10)
 bdws = np.linspace(0.1, 1, 10)
 grid = GridSearchCV(KernelDensity(kernel='gaussian'), {'bandwidth': bdws}, cv=10)
 grid.fit(pts)
@@ -56,6 +52,7 @@ kde = grid.best_estimator_
 
 vec = np.exp(kde.score_samples(pts))
 
+# Estimated density function
 plt.fill_between(np.arange(len(pts)), vec, alpha=0.5)
 plt.show()
 
@@ -100,7 +97,6 @@ for i in reversed(range(m)):
         for j in nbs:
             markedp[j] = True
         groups[ix] = [j for j in nbs]
-        #ptso = np.append(ptso, [[pts[i][0], pts[i][1], pts[i][2]]])
         ptso.append(pts[ix])
         pts_idx[len(veco)] = ix
         veco.append(vecs[ix])
@@ -165,7 +161,7 @@ def FindClusters( rad, tau ):
 
     return uf, births, deaths
 
-
+# Running UnionFind with tau=np.inf will give us persistence classes
 uf, births, deaths = UnionFind( rad=rad, tau = np.inf)
 
 # Forming persistence classes
@@ -179,9 +175,9 @@ plt.ylabel("Death")
 plt.show()
 
 # Finding the best merging parameter from the graph
-tau = 0.001
+tau = 0.1
 
-uf, births, deaths = UnionFind( rad, tau)
+uf, births, deaths = UnionFind(rad, tau)
 
 
 # Clustering
@@ -219,5 +215,3 @@ img_result = np.reshape(clcolors, img_luv.shape)
 plt.title('Final result')
 plt.imshow(img_result)
 plt.show()
-
-
